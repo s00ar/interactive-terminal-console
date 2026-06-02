@@ -49,6 +49,61 @@ jobs:
           php -l db_config.php
           php -l deploy_sync.php
 
+      - name: Validate production configuration
+        shell: pwsh
+        env:
+          APP_URL: ${{ vars.APP_URL }}
+          DEPLOY_PROTOCOL: ${{ vars.DEPLOY_PROTOCOL }}
+          DEPLOY_PORT: ${{ vars.DEPLOY_PORT }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USERNAME: ${{ secrets.DEPLOY_USERNAME }}
+          DEPLOY_PASSWORD: ${{ secrets.DEPLOY_PASSWORD }}
+          DEPLOY_SERVER_DIR: ${{ secrets.DEPLOY_SERVER_DIR }}
+          APP_DB_HOST: ${{ secrets.APP_DB_HOST }}
+          APP_DB_PORT: ${{ secrets.APP_DB_PORT }}
+          APP_DB_NAME: ${{ secrets.APP_DB_NAME }}
+          APP_DB_USER: ${{ secrets.APP_DB_USER }}
+          APP_DB_PASSWORD: ${{ secrets.APP_DB_PASSWORD }}
+          DEPLOY_HOOK_TOKEN: ${{ secrets.DEPLOY_HOOK_TOKEN }}
+        run: |
+          $required = @(
+            "APP_URL",
+            "DEPLOY_HOST",
+            "DEPLOY_USERNAME",
+            "DEPLOY_PASSWORD",
+            "DEPLOY_SERVER_DIR",
+            "APP_DB_HOST",
+            "APP_DB_PORT",
+            "APP_DB_NAME",
+            "APP_DB_USER",
+            "APP_DB_PASSWORD",
+            "DEPLOY_HOOK_TOKEN"
+          )
+
+          $missing = @()
+          foreach ($name in $required) {
+            $value = [string](Get-Item -LiteralPath "Env:$name").Value
+            if ([string]::IsNullOrWhiteSpace($value)) {
+              $missing += $name
+            }
+          }
+
+          if ([string]::IsNullOrWhiteSpace([string]$env:DEPLOY_PROTOCOL)) {
+            $env:DEPLOY_PROTOCOL = "ftps"
+          }
+
+          if ([string]::IsNullOrWhiteSpace([string]$env:DEPLOY_PORT)) {
+            $env:DEPLOY_PORT = "21"
+          }
+
+          if ($missing.Count -gt 0) {
+            throw ("Missing GitHub Actions production configuration: " + ($missing -join ", "))
+          }
+
+          if (-not [string]$env:DEPLOY_SERVER_DIR.EndsWith("/")) {
+            throw "DEPLOY_SERVER_DIR must end with '/'. Example: /home/u12345678/domains/terminal.afec.space/public_html/"
+          }
+
       - name: Build release bundle
         shell: pwsh
         env:

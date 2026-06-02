@@ -61,7 +61,7 @@ function Copy-DeployPath([string]$RelativePath) {
         New-Directory $destinationParent
     }
 
-    if ((Get-Item -LiteralPath $source) -is [System.IO.DirectoryInfo]) {
+    if (Test-Path -LiteralPath $source -PathType Container) {
         Copy-Item -LiteralPath $source -Destination $destination -Recurse -Force
         return
     }
