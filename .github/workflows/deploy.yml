@@ -1,0 +1,82 @@
+name: Deploy RPG Interface
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      sync_database:
+        description: Replace the production MySQL data with data/users.json and data/evidence.json after upload
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rpginterface-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+
+      - name: Lint PHP entry points
+        run: |
+          php -l api.php
+          php -l db_config.php
+          php -l deploy_sync.php
+
+      - name: Build release bundle
+        shell: pwsh
+        env:
+          APP_DB_HOST: ${{ secrets.APP_DB_HOST }}
+          APP_DB_PORT: ${{ secrets.APP_DB_PORT }}
+          APP_DB_NAME: ${{ secrets.APP_DB_NAME }}
+          APP_DB_USER: ${{ secrets.APP_DB_USER }}
+          APP_DB_PASSWORD: ${{ secrets.APP_DB_PASSWORD }}
+          DEPLOY_HOOK_TOKEN: ${{ secrets.DEPLOY_HOOK_TOKEN }}
+        run: ./deploy/build-release.ps1 -OutputRoot ./deploy/build
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-release
+          path: |
+            deploy/build/site.zip
+            deploy/build/database.sql
+
+      - name: Upload site files over FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: ${{ secrets.FTP_SERVER_DIR }}
+          local-dir: ./deploy/build/site/
+
+      - name: Sync database from uploaded JSON
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.sync_database }}
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          DEPLOY_HOOK_TOKEN: ${{ secrets.DEPLOY_HOOK_TOKEN }}
+        run: |
+          APP_URL="${APP_URL%/}"
+          curl \
+            --fail \
+            --show-error \
+            --silent \
+            --request POST \
+            --header "Authorization: Bearer ${DEPLOY_HOOK_TOKEN}" \
+            "${APP_URL}/deploy_sync.php"

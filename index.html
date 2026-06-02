@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex,notranslate">
+  <meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet,noimageindex,notranslate">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta http-equiv="Permissions-Policy" content="accelerometer=(),camera=(),geolocation=(),gyroscope=(),microphone=(),payment=(),usb=()">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; img-src 'self' data: blob:; media-src 'self' data: blob:; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'">
+  <title>Aornum Research Terminal</title>
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="ambient-grid" aria-hidden="true"></div>
+  <div class="scanline" aria-hidden="true"></div>
+
+  <main class="app-shell">
+    <section id="loginView" class="view login-view is-active" aria-label="Acceso a terminal Aornum">
+      <div class="login-frame panel-frame">
+        <aside class="login-brand">
+          <p class="eyebrow">AORNUM CRIMSON UNIVERSAL LTD.</p>
+          <h1>AORNUM<br>RESEARCH TERMINAL</h1>
+          <div class="node-meta">
+            <span>A.C.V. PHOENIX</span>
+            <span>NODO CENTRAL</span>
+            <span>ENLACE LOCAL // ESTABLE</span>
+          </div>
+        </aside>
+
+        <section class="login-panel" aria-label="Formulario de acceso">
+          <div class="panel-title">
+            <span></span>
+            <h2>ACCESO DE INVESTIGACION</h2>
+          </div>
+
+          <form id="loginForm" class="login-form">
+            <label for="usernameInput">Usuario</label>
+            <input id="usernameInput" name="username" type="text" autocomplete="username" required>
+
+            <label for="passwordInput">Contrasena</label>
+            <input id="passwordInput" name="password" type="password" autocomplete="current-password" required>
+
+            <button type="submit" class="primary-button">ENTRAR</button>
+            <p id="loginError" class="form-error" role="alert"></p>
+          </form>
+
+          <div class="available-users">
+            <h3>USUARIOS DISPONIBLES</h3>
+            <ul id="availableUsersList"></ul>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section id="terminalView" class="view terminal-view" aria-label="Terminal de investigacion Red Phoenix" hidden>
+      <header class="terminal-header panel-frame">
+        <div>
+          <p class="eyebrow">AORNUM CRIMSON UNIVERSAL LTD.</p>
+          <h1>RED PHOENIX // TERMINAL DE INVESTIGACION</h1>
+        </div>
+        <div class="header-side">
+          <div class="header-status">
+            <span>ESTADO: OPERATIVO</span>
+            <span>FECHA: 31/05/3312</span>
+          </div>
+          <button type="button" class="icon-button" data-action="manual-refresh" title="Actualizar datos" aria-label="Actualizar datos">&#8635;</button>
+        </div>
+      </header>
+
+      <section class="terminal-grid">
+        <aside class="left-panel panel-frame">
+          <div class="brand-lockup">
+            <span>AORNUM</span>
+            <strong>RESEARCH NODE</strong>
+          </div>
+
+          <dl class="profile-data">
+            <div>
+              <dt>USUARIO ACTIVO</dt>
+              <dd id="activeUserName">--</dd>
+            </div>
+            <div>
+              <dt>NIVEL DE ACCESO</dt>
+              <dd id="activeAccessLevel">--</dd>
+            </div>
+            <div>
+              <dt>CONEXION</dt>
+              <dd>ESTABLE / CIFRADA</dd>
+            </div>
+            <div>
+              <dt>NODO ACTUAL</dt>
+              <dd>A.C.V. PHOENIX / CENTRAL</dd>
+            </div>
+          </dl>
+
+          <nav class="quick-actions" aria-label="Accesos rapidos de perfil">
+            <button id="adminAccessButton" type="button" class="admin-only" hidden>ADMIN</button>
+          </nav>
+        </aside>
+
+        <section class="media-panel panel-frame">
+          <div class="media-header">
+            <div>
+              <p class="eyebrow">PANEL DE CONTENIDO</p>
+              <h2 id="contentTitle">ESPERANDO COMANDO</h2>
+            </div>
+            <span id="contentState" class="state-chip">EN ESPERA</span>
+          </div>
+
+          <div id="contentViewport" class="content-viewport" aria-live="polite"></div>
+        </section>
+
+        <aside class="right-panel panel-frame">
+          <section class="projection-console" aria-label="Proyeccion activa">
+            <div class="panel-title">
+              <span></span>
+              <h2>PROYECCION ACTIVA</h2>
+            </div>
+            <div class="projection-stage-wrap projection-stage-wrap--side">
+              <div id="projectionStage" class="projection-stage" aria-live="polite"></div>
+              <p id="projectionCaption" class="projection-caption">PROYECCION // EN ESPERA</p>
+            </div>
+          </section>
+
+          <nav class="section-menu" aria-label="Menu de secciones">
+            <button type="button" data-command="archivos">ARCHIVOS</button>
+            <button type="button" data-command="comunicaciones">COMUNICACIONES</button>
+            <button type="button" data-command="notas">NOTAS</button>
+            <button type="button" data-command="roster">ROSTER</button>
+          </nav>
+
+          <section class="event-console" aria-label="Consola de eventos">
+            <div class="panel-title">
+              <span></span>
+              <h2>LOG DE EVENTOS</h2>
+            </div>
+            <div id="eventLog" class="event-log"></div>
+          </section>
+        </aside>
+      </section>
+
+      <footer class="command-dock panel-frame">
+        <div class="command-input-group">
+          <label class="sr-only" for="commandInput">Comando de investigacion</label>
+          <span class="prompt-marker">&gt;</span>
+          <input id="commandInput" type="text" autocomplete="off" spellcheck="false" placeholder="INGRESE COMANDO DE INVESTIGACION...">
+          <button id="sendCommandButton" type="button" class="primary-button">ENVIAR</button>
+        </div>
+
+        <div class="direction-pad" aria-label="Controles direccionales">
+          <button type="button" data-direction="ARRIBA" aria-label="Arriba">&#9650;</button>
+          <button type="button" data-direction="IZQUIERDA" aria-label="Izquierda">&#9664;</button>
+          <button type="button" data-direction="ABAJO" aria-label="Abajo">&#9660;</button>
+          <button type="button" data-direction="DERECHA" aria-label="Derecha">&#9654;</button>
+        </div>
+
+        <button id="logoutButton" type="button" class="secondary-button">SALIR</button>
+      </footer>
+    </section>
+
+    <section id="adminView" class="view admin-view" aria-label="Panel administrativo de evidencias" hidden>
+      <header class="admin-header panel-frame">
+        <div>
+          <p class="eyebrow">ACCESO ADMINISTRATIVO</p>
+          <h1>JORDAN WALKE // REPOSITORIO CENTRAL</h1>
+        </div>
+        <div class="header-actions">
+          <button type="button" class="icon-button" data-action="manual-refresh" title="Actualizar datos" aria-label="Actualizar datos">&#8635;</button>
+          <button id="backToTerminalButton" type="button" class="secondary-button">VOLVER A TERMINAL</button>
+        </div>
+      </header>
+
+      <section class="admin-grid">
+        <aside class="admin-list-panel panel-frame">
+          <div class="panel-title">
+            <span></span>
+            <h2>EVIDENCIAS DISPONIBLES</h2>
+          </div>
+          <div id="adminEntryList" class="admin-entry-list"></div>
+        </aside>
+
+        <section class="admin-preview panel-frame">
+          <div class="panel-title">
+            <span></span>
+            <h2>VISTA PREVIA</h2>
+          </div>
+          <div id="adminPreview" class="content-viewport preview-viewport"></div>
+        </section>
+
+        <aside class="admin-list-panel panel-frame">
+          <div class="panel-title">
+            <span></span>
+            <h2>CONFIGURACION JSON</h2>
+          </div>
+          <form id="adminForm" class="admin-form compact-form">
+            <input id="entryIdInput" type="hidden">
+
+            <label>
+              Comando
+              <input id="entryCommandInput" type="text" placeholder="phx-03" required>
+            </label>
+
+            <label>
+              Titulo
+              <input id="entryTitleInput" type="text" placeholder="Nuevo registro" required>
+            </label>
+
+            <div class="form-grid single-line-grid">
+              <label>
+                Tipo
+                <select id="entryTypeInput">
+                  <option value="text">texto</option>
+                  <option value="image">imagen</option>
+                  <option value="video">video</option>
+                  <option value="audio">audio</option>
+                </select>
+              </label>
+              <label>
+                Acceso
+                <select id="entryAccessInput">
+                  <option value="user">usuario</option>
+                  <option value="admin">admin</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="form-grid single-line-grid">
+              <label>
+                Alcance
+                <select id="entryAudienceModeInput">
+                  <option value="all">todos los comandantes</option>
+                  <option value="specific">comandantes especificos</option>
+                </select>
+              </label>
+              <label>
+                Comandantes objetivo
+                <input id="entryCommandersInput" type="text" placeholder="jota alpha, sadane">
+              </label>
+            </div>
+
+            <label>
+              Alias (separados por coma)
+              <input id="entryAliasesInput" type="text" placeholder="a03, fragmento-a03">
+            </label>
+
+            <label>
+              Contenido (texto o ruta/url)
+              <textarea id="entryContentInput" rows="4" required></textarea>
+            </label>
+
+            <label>
+              Media asociada (ruta/url opcional)
+              <input id="entryMediaInput" type="text" placeholder="assets/evidence/mi-imagen.png">
+            </label>
+
+            <label>
+              Carga de archivo (imagen/video/audio)
+              <input id="entryFileInput" type="file" accept="image/*,video/mp4,video/*,audio/mpeg,audio/mp3,audio/*">
+            </label>
+
+            <label>
+              Resumen
+              <textarea id="entrySummaryInput" rows="2"></textarea>
+            </label>
+
+            <label>
+              Fuente
+              <input id="entrySourceInput" type="text" placeholder="Carga admin local">
+            </label>
+
+            <label class="toggle-row">
+              <input id="entryActiveInput" type="checkbox" checked>
+              <span>Entrada activa</span>
+            </label>
+
+            <label class="toggle-row">
+              <input id="entryHiddenInput" type="checkbox">
+              <span>Informacion oculta (requiere desbloqueo)</span>
+            </label>
+
+            <label class="toggle-row">
+              <input id="entryUnlockedForAllInput" type="checkbox">
+              <span>Desbloqueada para todos</span>
+            </label>
+
+            <div class="admin-actions">
+              <button id="newEntryButton" type="button" class="secondary-button">NUEVA</button>
+              <button id="editEntryButton" type="button" class="secondary-button">EDITAR</button>
+              <button type="submit" class="primary-button">GUARDAR</button>
+              <button id="deleteEntryButton" type="button" class="danger-button">ELIMINAR</button>
+            </div>
+
+            <div class="admin-actions">
+              <button id="exportJsonButton" type="button" class="secondary-button">EXPORTAR JSON</button>
+              <button id="resetRuntimeButton" type="button" class="secondary-button">RESTAURAR JSON BASE</button>
+            </div>
+          </form>
+
+          <div id="adminMetaBox" class="json-guide"></div>
+          <div id="commanderUnlockPanel" class="json-guide"></div>
+        </aside>
+      </section>
+    </section>
+  </main>
+
+  <script src="data/seed-bundle.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

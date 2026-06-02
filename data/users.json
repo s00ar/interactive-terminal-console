@@ -1,0 +1,26 @@
+{
+  "jordan walke": {
+    "displayName": "Jordan Walke",
+    "password": "crimson",
+    "role": "admin",
+    "accessLabel": "ADMIN / CRIMSON"
+  },
+  "jota alpha": {
+    "displayName": "Jota Alpha",
+    "password": "phoenix",
+    "role": "user",
+    "accessLabel": "INVESTIGADOR"
+  },
+  "sadane": {
+    "displayName": "Sadane",
+    "password": "phoenix",
+    "role": "user",
+    "accessLabel": "INVESTIGADOR"
+  },
+  "bernard": {
+    "displayName": "Bernard",
+    "password": "phoenix",
+    "role": "user",
+    "accessLabel": "INVESTIGADOR"
+  }
+}
