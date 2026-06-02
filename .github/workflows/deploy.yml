@@ -25,7 +25,7 @@ jobs:
     timeout-minutes: 30
     environment:
       name: production
-      url: ${{ secrets.APP_URL }}
+      url: ${{ vars.APP_URL }}
 
     steps:
       - name: Check out repository
@@ -80,7 +80,7 @@ jobs:
 
       - name: Smoke test site root
         env:
-          APP_URL: ${{ secrets.APP_URL }}
+          APP_URL: ${{ vars.APP_URL }}
         run: |
           APP_URL="${APP_URL%/}"
           curl \
@@ -94,7 +94,7 @@ jobs:
       - name: Sync database from uploaded JSON
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.sync_database }}
         env:
-          APP_URL: ${{ secrets.APP_URL }}
+          APP_URL: ${{ vars.APP_URL }}
           DEPLOY_HOOK_TOKEN: ${{ secrets.DEPLOY_HOOK_TOKEN }}
         run: |
           APP_URL="${APP_URL%/}"
@@ -110,7 +110,7 @@ jobs:
 
       - name: Smoke test API bootstrap
         env:
-          APP_URL: ${{ secrets.APP_URL }}
+          APP_URL: ${{ vars.APP_URL }}
         run: |
           APP_URL="${APP_URL%/}"
           response="$(curl \

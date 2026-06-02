@@ -27,7 +27,6 @@ Create a GitHub Actions environment named `production`, then add these environme
 - `APP_DB_NAME`
 - `APP_DB_USER`
 - `APP_DB_PASSWORD`
-- `APP_URL`
 - `DEPLOY_HOOK_TOKEN`
 
 Notes:
@@ -38,6 +37,7 @@ Notes:
 
 Add these GitHub Actions environment or repository variables as well:
 
+- `APP_URL`
 - `DEPLOY_PROTOCOL`: `ftp`, `ftps`, or `ftps-legacy`
 - `DEPLOY_PORT`: usually `21`
 
