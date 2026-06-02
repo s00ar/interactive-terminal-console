@@ -1,6 +1,5 @@
 /deploy/build/
 /deploy/entrega/
 /app_secrets.php
-db_config.php
 *.sql
 *.zip
