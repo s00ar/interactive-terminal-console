@@ -22,10 +22,21 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: production
+      url: ${{ secrets.APP_URL }}
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Download Git LFS assets
+        run: |
+          git lfs pull
+          git lfs checkout
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -53,18 +64,32 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: production-release
-          path: |
-            deploy/build/site.zip
-            deploy/build/database.sql
+          if-no-files-found: error
+          path: deploy/build/
 
-      - name: Upload site files over FTP
+      - name: Upload site files
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: ${{ secrets.FTP_SERVER_DIR }}
+          server: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USERNAME }}
+          password: ${{ secrets.DEPLOY_PASSWORD }}
+          port: ${{ vars.DEPLOY_PORT || '21' }}
+          protocol: ${{ vars.DEPLOY_PROTOCOL || 'ftp' }}
+          server-dir: ${{ secrets.DEPLOY_SERVER_DIR }}
           local-dir: ./deploy/build/site/
+
+      - name: Smoke test site root
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+        run: |
+          APP_URL="${APP_URL%/}"
+          curl \
+            --fail \
+            --show-error \
+            --silent \
+            --retry 5 \
+            --retry-delay 5 \
+            "${APP_URL}/" > /dev/null
 
       - name: Sync database from uploaded JSON
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.sync_database }}
@@ -77,6 +102,22 @@ jobs:
             --fail \
             --show-error \
             --silent \
+            --retry 5 \
+            --retry-delay 5 \
             --request POST \
             --header "Authorization: Bearer ${DEPLOY_HOOK_TOKEN}" \
             "${APP_URL}/deploy_sync.php"
+
+      - name: Smoke test API bootstrap
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+        run: |
+          APP_URL="${APP_URL%/}"
+          response="$(curl \
+            --fail \
+            --show-error \
+            --silent \
+            --retry 5 \
+            --retry-delay 5 \
+            "${APP_URL}/api.php?action=bootstrap")"
+          echo "$response" | grep '"ok":true' > /dev/null
